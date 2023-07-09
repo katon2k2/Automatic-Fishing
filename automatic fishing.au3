@@ -10,7 +10,7 @@
 #include <Color.au3>
 
 #Region ### START Koda GUI section ### Form=
-$Form1 = GUICreate("AUTO by KATON v5.0", 363, 273, 192, 124)
+$Form1 = GUICreate("AUTO by KATON v6.0", 363, 273, 192, 124)
 $Group1 = GUICtrlCreateGroup("", 8, 0, 345, 153)
 $Label1 = GUICtrlCreateLabel("tên cửa sổ", 56, 19, 53, 17)
 $nameWindow = GUICtrlCreateInput("", 120, 16, 121, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_CENTER, $WS_BORDER), BitOR($WS_EX_CLIENTEDGE, $WS_EX_STATICEDGE))
@@ -18,12 +18,14 @@ $adjust = GUICtrlCreateButton("căn chỉnh", 24, 48, 83, 41)
 $complete = GUICtrlCreateButton("hoàn tất", 24, 96, 83, 41)
 
 $Group2 = GUICtrlCreateGroup("", 120, 40, 121, 97)
-$LbX = GUICtrlCreateLabel("X", 128, 56, 18, 20)
-GUICtrlSetFont(-1, 14, 400, 0, "MS Sans Serif")
-$LbY = GUICtrlCreateLabel("Y", 128, 104, 16, 20)
-GUICtrlSetFont(-1, 14, 400, 0, "MS Sans Serif")
-$positionX = GUICtrlCreateInput("480", 152, 56, 73, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_CENTER, $WS_BORDER), BitOR($WS_EX_CLIENTEDGE, $WS_EX_STATICEDGE))
-$positionY = GUICtrlCreateInput("185", 152, 104, 73, 21, BitOR($GUI_SS_DEFAULT_INPUT, $ES_CENTER, $WS_BORDER), BitOR($WS_EX_CLIENTEDGE, $WS_EX_STATICEDGE))
+$up = GUICtrlCreateButton("🠽", 165, 50, 30, 30)
+GUICtrlSetFont(-1, 20, 400, 0, "MS Sans Serif")
+$down = GUICtrlCreateButton("🠿", 165, 102, 30, 30)
+GUICtrlSetFont(-1, 20, 400, 0, "MS Sans Serif")
+$left = GUICtrlCreateButton("🠼", 135, 75, 30, 30)
+GUICtrlSetFont(-1, 20, 400, 0, "MS Sans Serif")
+$right = GUICtrlCreateButton("🠾", 195, 75, 30, 30)
+GUICtrlSetFont(-1, 20, 400, 0, "MS Sans Serif")
 GUICtrlCreateGroup("", -99, -99, 1, 1)
 
 $Group3 = GUICtrlCreateGroup("", 247, 10, 100, 97)
@@ -40,11 +42,13 @@ $Label5 = GUICtrlCreateLabel("số cá câu được", 136, 207, 90, 20)
 $demCaCau = GUICtrlCreateInput(0, 232, 204, 50, 24, BitOR($GUI_SS_DEFAULT_INPUT, $ES_CENTER, $WS_BORDER), BitOR($WS_EX_CLIENTEDGE, $WS_EX_STATICEDGE))
 
 GUICtrlSetState($typeSimulator, $GUI_DISABLE)
-GUICtrlSetState($positionX, $GUI_DISABLE)
-GUICtrlSetState($positionY, $GUI_DISABLE)
 GUICtrlSetState($complete, $GUI_DISABLE)
 GUICtrlSetState($reste, $GUI_DISABLE)
 GUICtrlSetState($pause, $GUI_DISABLE)
+GUICtrlSetState($up, $GUI_DISABLE)
+GUICtrlSetState($down, $GUI_DISABLE)
+GUICtrlSetState($left, $GUI_DISABLE)
+GUICtrlSetState($right, $GUI_DISABLE)
 
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
@@ -53,10 +57,27 @@ Global $title = ""
 Global $tRect
 Global $paddingX
 Global $paddingY
+Global $positionX = 480
+Global $positionY = 185
 Global $interrupt = 0
 
-#Region Định nghĩa và gán các Button muốn dùng để ngắt vòng lặp
+Func up()
+	$positionY = ($positionY <= 0) ? 0 : $positionY - 2
+EndFunc
 
+Func down()
+	$positionY = ($positionY >= 540) ? 540 : $positionY + 2
+EndFunc
+
+Func left()
+	$positionX = ($positionX <= 0) ? 0 : $positionX - 2
+EndFunc
+
+Func right()
+	$positionX = ($positionX >= 960) ? 960 : $positionX + 2
+EndFunc
+
+#Region Định nghĩa và gán các Button muốn dùng để ngắt vòng lặp
 GUIRegisterMsg($WM_COMMAND, "_WM_COMMAND_BUTTON")
 Func _WM_COMMAND_BUTTON($hWnd, $Msg, $wParam, $lParam)
 	Switch BitAND($wParam, 0x0000FFFF)
@@ -100,35 +121,55 @@ While 1
 			Exit
 		Case $adjust
 			GUICtrlSetState($typeSimulator, $GUI_ENABLE)
-			GUICtrlSetState($positionX, $GUI_ENABLE)
-			GUICtrlSetState($positionY, $GUI_ENABLE)
 			GUICtrlSetState($complete, $GUI_ENABLE)
 			GUICtrlSetState($adjust, $GUI_DISABLE)
 			GUICtrlSetState($start, $GUI_DISABLE)
 			GUICtrlSetState($pause, $GUI_DISABLE)
 			GUICtrlSetState($reste, $GUI_ENABLE)
+			GUICtrlSetState($up, $GUI_ENABLE)
+			GUICtrlSetState($down, $GUI_ENABLE)
+			GUICtrlSetState($left, $GUI_ENABLE)
+			GUICtrlSetState($right, $GUI_ENABLE)
+			HotKeySet("{UP}", "up")
+			HotKeySet("{DOWN}", "down")
+			HotKeySet("{LEFT}", "left")
+			HotKeySet("{RIGHT}", "right")
 			While 1
 				$pos = WinGetPos($title)
 				_WinAPI_RedrawWindow(_WinAPI_GetDesktopWindow(), $tRect, 0, BitOR($RDW_INVALIDATE, $RDW_ALLCHILDREN))
-				_WinAPI_DrawRect($pos[0] + GUICtrlRead($positionX) - 30, $pos[1] + GUICtrlRead($positionY) + 12, 5, 5, 0x0000FF)
-				_WinAPI_DrawRect($pos[0] + GUICtrlRead($positionX), $pos[1] + GUICtrlRead($positionY), 5, 25, 0x0000FF)
-				_WinAPI_DrawRect($pos[0] + GUICtrlRead($positionX) + 30, $pos[1] + GUICtrlRead($positionY) + 12, 5, 5, 0x0000FF)
+				_WinAPI_DrawRect($pos[0] + $positionX - 30, $pos[1] + $positionY + 12, 5, 5, 0x0000FF)
+				_WinAPI_DrawRect($pos[0] + $positionX, $pos[1] + $positionY, 5, 25, 0x0000FF)
+				_WinAPI_DrawRect($pos[0] + $positionX + 30, $pos[1] + $positionY + 12, 5, 5, 0x0000FF)
 				Switch GUIGetMsg()
+					Case $up
+						$positionY = ($positionY <= 0) ? 0 : $positionY - 2
+					Case $down
+						$positionY = ($positionY >= 540) ? 540 : $positionY + 2
+					Case $left
+						$positionX = ($positionX <= 0) ? 0 : $positionX - 2
+					Case $right
+						$positionX = ($positionX >= 960) ? 960 : $positionX + 2
 					Case $complete
 						GUICtrlSetState($complete, $GUI_DISABLE)
 						GUICtrlSetState($adjust, $GUI_ENABLE)
 						ExitLoop
 					Case $reste
 						GUICtrlSetData($typeSimulator, 'LDPlayer')
-						GUICtrlSetData($positionX, '480')
-						GUICtrlSetData($positionY, '185')
+						$positionX = 480
+						$positionY = 185
 				EndSwitch
 			WEnd
+			HotKeySet("{UP}")
+			HotKeySet("{DOWN}")
+			HotKeySet("{LEFT}")
+			HotKeySet("{RIGHT}")
 			GUICtrlSetState($typeSimulator, $GUI_DISABLE)
-			GUICtrlSetState($positionX, $GUI_DISABLE)
-			GUICtrlSetState($positionY, $GUI_DISABLE)
 			GUICtrlSetState($reste, $GUI_DISABLE)
 			GUICtrlSetState($start, $GUI_ENABLE)
+			GUICtrlSetState($up, $GUI_DISABLE)
+			GUICtrlSetState($down, $GUI_DISABLE)
+			GUICtrlSetState($left, $GUI_DISABLE)
+			GUICtrlSetState($right, $GUI_DISABLE)
 		Case $start
 			WinActivate($title)
 			WinSetOnTop($title, "", $WINDOWS_ONTOP)
@@ -143,10 +184,10 @@ While 1
 			GUICtrlSetState($pause, $GUI_ENABLE)
 			While $interrupt == 0
 				$pos = WinGetPos($title)
-				$topColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + GUICtrlRead($PositionX) + 3, $pos[1] + GUICtrlRead($PositionY) + 5)), 2)
-				$bottomColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + GUICtrlRead($PositionX) + 3, $pos[1] + GUICtrlRead($PositionY) + 20)), 2)
-				$leftColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + GUICtrlRead($PositionX) - 30, $pos[1] + GUICtrlRead($PositionY) + 1)), 2)
-				$rightColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + GUICtrlRead($PositionX) + 30, $pos[1] + GUICtrlRead($PositionY) + 1)), 2)
+				$topColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + $positionX + 3, $pos[1] + $positionY + 5)), 2)
+				$bottomColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + $positionX + 3, $pos[1] + $positionY + 20)), 2)
+				$leftColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + $positionX - 30, $pos[1] + $positionY + 1)), 2)
+				$rightColor = Hex(_ColorGetRed(PixelGetColor($pos[0] + $positionX + 30, $pos[1] + $positionY + 1)), 2)
 				$baoQuan = PixelSearch($pos[0] + 740, $pos[1] + 450, $pos[0] + 810, $pos[1] + 460, '0x41C5F3')
 				$baLo = PixelSearch($pos[0] + 920, $pos[1] + 330, $pos[0] + 940, $pos[1] + 345, '0xE44142')
 				Select
